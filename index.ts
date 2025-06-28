@@ -1,4 +1,5 @@
 import express, { type Request, type Response } from 'express';
+import cors from 'cors';
 
 interface ServiceInstance {
     timestamp: number;
@@ -18,6 +19,7 @@ const port = process.env.PORT || 3009;
 const services: ServiceRegistry = {};
 
 app.use(express.json());
+app.use(cors());
 
 app.post('/register', (req, res) => {
     
@@ -28,7 +30,7 @@ app.post('/register', (req, res) => {
         return;
     }
     const key = `${serviceName}@${version}`;
-    const serviceUrl = `http://${ip}:${port}`;
+    const serviceUrl = `https://${ip}:${port}`;
 
     if (!services[key]) {
         services[key] = {
