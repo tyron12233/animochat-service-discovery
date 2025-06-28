@@ -98,6 +98,38 @@ app.get('/discover/:serviceName/:version', (req, res) => {
 });
 
 
+// get all running instances of a service of a specific version
+// no randomized load balancing.
+app.get('/discover/:serviceName/:version/all', (req, res) => {
+    const { serviceName, version } = req.params;
+    if (!serviceName || !version) {
+        res.status(400).json({ message: "Service name and version are required." });
+        return;
+    }
+
+    const serviceVersions = services[serviceName];
+    if (!serviceVersions) {
+        res.status(404).json({ message: "Service not found." });
+        return;
+    }
+
+    const instances = serviceVersions[version];
+    if (!instances) {
+        res.status(404).json({ message: "Service version not found." });
+        return;
+    }
+
+    // Filter for only the instances that are currently running
+    const runningInstances = instances.filter(inst => inst.status === 'RUNNING');
+    if (runningInstances.length === 0) {
+        res.status(404).json({ message: "No running instances found for this service version." });
+        return;
+    }
+
+    res.status(200).json(runningInstances);
+});
+
+
 app.delete("/unregister", (req, res) => {
   const { serviceName, version, url } = req.body;
   if (!serviceName || !version || !url) {
