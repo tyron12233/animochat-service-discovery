@@ -13,10 +13,13 @@ interface ServiceInstance {
 type ServiceRegistry = Record<string, ServiceInstance>;
 
 const app = express();
+
 const TIMEOUT = 15;
 const port = process.env.PORT || 3009;
 
 const services: ServiceRegistry = {};
+
+app.set('trust proxy', true);
 
 app.use(express.json());
 app.use(cors());
