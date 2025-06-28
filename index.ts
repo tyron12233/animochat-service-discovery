@@ -5,8 +5,6 @@ interface ServiceInstance {
     timestamp: number;
     url: string;
     version: string;
-    ip: string;
-    port: number;
 }
 
 
@@ -26,24 +24,20 @@ app.use(cors());
 
 app.post('/register', (req, res) => {
     
-    const { serviceName, version, port } = req.body;
-    const ip = req.ip!.includes('::') ? `[${req.ip!}]` : req.ip;
-    if (!serviceName || !version || !port || !ip) {
-        res.status(400).json({ error: 'Missing required fields: serviceName, version, or port.' });
+    const { serviceName, version, url } = req.body;
+    if (!serviceName || !version || !url) {
+        res.status(400).json({ message: 'Service name, version, and URL are required.' });
         return;
     }
     const key = `${serviceName}@${version}`;
-    const serviceUrl = `https://${ip}:${port}`;
+    const serviceUrl = new URL(url);
 
     if (!services[key]) {
         services[key] = {
             timestamp: Math.floor(Date.now() / 1000),
-            url: serviceUrl,
-            serviceName,
-            version,
-            ip,
-            port
-        } as ServiceInstance;
+            url: serviceUrl.href,
+            version: version
+        };
         console.log(`Registered service: ${key} at ${serviceUrl}`);
         res.status(201).json({ message: `Service ${key} registered successfully.` });
         return;
