@@ -91,6 +91,13 @@ setInterval(() => {
     }
 }, 5000); 
 
+app.get('/services', (req, res) => {
+    // Object.values() extracts all the service instance objects from our registry into an array
+    const serviceList = Object.values(services);
+    
+    res.status(200).json(serviceList);
+});
+
 
 app.listen(port, () => {
     console.log(`Discovery server listening on port ${port}`);
