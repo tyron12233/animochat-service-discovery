@@ -6,6 +6,7 @@ interface ServiceInstance {
   url: string;
   version: string;
   status: "RUNNING" | "DOWN";
+   serviceName: string; 
 }
 
 type ServiceRegistry = Record<string, ServiceInstance>;
@@ -39,6 +40,7 @@ app.post("/register", (req, res) => {
       url: serviceUrl.href,
       version: version,
       status: "RUNNING",
+      serviceName: serviceName
     };
     console.log(`Registered service: ${key} at ${serviceUrl}`);
     res
@@ -99,11 +101,22 @@ setInterval(() => {
     }
 }, 5000); 
 
-app.get("/services", (req, res) => {
-  // Object.values() extracts all the service instance objects from our registry into an array
-  const serviceList = Object.values(services);
+app.get('/services', (req, res) => {
+    const groupedServices = Object.values(services).reduce((acc, service) => {
+        const { serviceName, version } = service;
 
-  res.status(200).json(serviceList);
+        // If the service name key doesn't exist in our accumulator, create it
+        if (!acc[serviceName]) {
+            acc[serviceName] = {};
+        }
+
+        // Assign the service object to its version under the service name
+        acc[serviceName][version] = service;
+
+        return acc;
+    }, {} as Record<string, Record<string, ServiceInstance>>); // Initialize with a typed empty object
+    
+    res.status(200).json(groupedServices);
 });
 
 app.listen(port, () => {
